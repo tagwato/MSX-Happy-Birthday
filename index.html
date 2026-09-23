@@ -1,4 +1,4 @@
-html
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -129,16 +129,115 @@ html
     const card = document.getElementById("card");
     const emulator = document.getElementById("emulator");
 
-    // DSK hospedado no próprio repositório GitHub
+    /*
+     * ---------------------------------------------------------
+     * OBTÉM O NOME DO PARAMETRO NO URL (Se houver)
+     *
+     * Exemplo:
+     *   ?nome=João
+     *
+     * resulta em:
+     *   nomeOriginal = "João"
+     * ---------------------------------------------------------
+     */
+
+    const params = new URLSearchParams(window.location.search);
+
+    const nomeOriginal =
+      params.get("nome") || "";
+
+
+    /*
+     * ---------------------------------------------------------
+     * NORMALIZA O NOME PARA O ENCODING ASCII
+     *
+     * Exemplos:
+     *
+     *   João       -> JOAO
+     *   José       -> JOSE
+     *   Marília    -> MARILIA
+     *   Gonçalves  -> GONCALVES
+     *   Ana Clara  -> ANA CLARA
+     *
+     * O MSX receberá somente caracteres ASCII (nao suporta acentos UTF-8)
+     * ---------------------------------------------------------
+     */
+
+    function normalizarNomeMSX(nome) {
+
+      return nome
+        // Remove acentos e sinais diacríticos
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+
+        // Converte para maiúsculas
+        .toUpperCase()
+
+        // Mantém somente caracteres ASCII seguros:
+        // A-Z, números, espaço e alguns sinais simples
+        .replace(/[^A-Z0-9 .'-]/g, "")
+
+        // Evita espaços repetidos
+        .replace(/\s+/g, " ")
+
+        // Remove espaços no início/fim
+        .trim()
+
+        // Limita o tamanho para caber na tela do MSX
+        .substring(0, 21);
+    }
+
+
+    const nomeMSX =
+      normalizarNomeMSX(nomeOriginal) || "";
+
+
+    /*
+     * ---------------------------------------------------------
+     * DSK
+     * ---------------------------------------------------------
+     */
+
     const dsk =
-      "https://tagwato.github.io/MSX-Happy-Birthday/MSX_Happy_birthday.dsk";
+      "https://tagwato.github.io/MSX-Happy-Birthday/MSX_Happy_birthday3.dsk";
+
+
+    /*
+     * ---------------------------------------------------------
+     * COMANDO BASIC
+     *
+     * O WebMSX irá simular a "digitação" do comando que carrega o arquivo .BAS, a definição 
+	 * do nome e o comando RUN.
+     * BASIC_ENTER faz o ENTER automaticamente ao final da linha de comando.
+	 * (mas NÃO foi suficiente só um ENTER ao final, tivemos de SIMULAR CR+LF intermediários, 
+	 *  para cada subcomando, para que o MSX realmente realizasse todos os comandos parciais)
+     * ---------------------------------------------------------
+     */
+
+    const basicCommand =	  
+	  encodeURIComponent('LOAD "HAPPY.BAS"') + '%0D%0A' + 
+	  encodeURIComponent(('1 N$="' + nomeMSX + '"') + '%0D%0A' + 
+	  'RUN';
+
+    /*
+     * ---------------------------------------------------------
+     * URL DO WEBMSX
+     * ---------------------------------------------------------
+     */
 
     const webmsx =
       "https://webmsx.org/?" +
       "diska=" + encodeURIComponent(dsk) +
       "&AUTO_START=1" +
       "&SCREEN_FULLSCREEN_MODE=2" +
-      "&TOUCH_MODE=3";
+      "&TOUCH_MODE=3" +
+      "&BASIC_ENTER=" + basicCommand;
+
+    /*
+     * ---------------------------------------------------------
+     * INICIA a APRESENTAÇÇAO dO PRESENTE
+     * ---------------------------------------------------------
+     */
 
     button.addEventListener("click", async () => {
 
@@ -146,7 +245,7 @@ html
       try {
         await document.documentElement.requestFullscreen();
       } catch (e) {
-        // Alguns navegadores podem bloquear o fullscreen.
+        // Alguns navegadores podem bloquear fullscreen.
         // Nesse caso, continuamos normalmente.
       }
 
@@ -156,9 +255,10 @@ html
       // Mostra o WebMSX
       emulator.style.display = "block";
 
-      // Só agora carrega o WebMSX, aproveitando o clique do usuário
+      // Carrega de fato o emulador WebMSX 
       emulator.src = webmsx;
     });
+
   </script>
 
 </body>
