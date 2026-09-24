@@ -1,4 +1,4 @@
-# [MSX-Happy-Birthday](https://github.com/tagwato/MSX-Happy-Birthday/edit/main/README.md)
+# [MSX-Happy-Birthday](https://github.com/tagwato/MSX-Happy-Birthday)
 
 Programa em Basic para o microcomputador MSX que apresenta uma animação de Feliz Aniversário personalizada com o nome do(a) aniversariante. 
 Utiliza o emulador [WEBMSX](webmsx.org).  
